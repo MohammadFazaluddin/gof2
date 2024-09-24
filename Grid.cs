@@ -2,56 +2,87 @@ namespace GameOfLife;
 
 public class Grid
 {
+    private List<Coordinate> _liveCells;
+    private SimulationRules _rules;
 
-    private int _rows { get; }
-    private int _cols { get; }
-    private bool[,] _state { get; set; }
-
-    public int Height { get => _rows; }
-    public int Width { get => _cols; }
-
-    public Grid(int height, int width)
+    public Grid(List<Coordinate> initial, SimulationRules rules)
     {
-        this._rows = height;
-        this._cols = width;
-        this._state = new bool[height, width];
+        _liveCells = new(initial);
+
+        _rules = rules;
     }
 
-    private bool IsValidCords(int row, int col)
+    public void GetNextGeneration()
     {
-        return col < Width && col >= 0 && row < Height && row >= 0;
+        _liveCells = NextGeneration(_liveCells);
     }
 
-
-    public void SetCellValue(int row, int col, bool value)
+    public void DisplayLiveCells()
     {
-        if (IsValidCords(row, col))
-            _state[row, col] = value;
-
-        // might throw an error to inform value was not set,
+        foreach (var cell in _liveCells)
+            Console.WriteLine($"{cell.X}, {cell.Y}");
     }
 
-    public bool GetCellValue(int row, int col)
+    public List<Coordinate> GetAllLiveCells()
     {
-        if (IsValidCords(row, col))
-            return _state[row, col];
-
-        return false;
+        return _liveCells;
     }
 
-    public List<Cordinates> GetLiveCells()
+    // should be pure function
+    public List<Coordinate> NextGeneration(List<Coordinate> currentLiveCells)
     {
-        List<Cordinates> cords = new();
-        // int[,] cords = new int[
-        for (int i = 0; i < Height; ++i)
+        var newLiveCells = new List<Coordinate>();
+        var neighbourCells = new List<Coordinate>();
+
+        foreach (var cell in currentLiveCells)
         {
-            for (int j = 0; j < Width; ++j)
+            neighbourCells.Add(cell);
+            foreach (var neighbour in GetNeighbours(cell))
             {
-                if (GetCellValue(i, j))
-                    cords.Add(new Cordinates { YCord = i, XCord = j });
+                neighbourCells.Add(neighbour);
             }
         }
-        return cords;
+
+        foreach (var cell in neighbourCells)
+        {
+            var liveNeighbours = GetLiveNeighborCount(cell, currentLiveCells);
+            bool isAlive = currentLiveCells.Contains(cell);
+
+            bool nextState = _rules.CheckCellState(isAlive, liveNeighbours);
+
+            if (nextState &&
+                    !newLiveCells.Any(o => o.X == cell.X && o.Y == cell.Y))
+            {
+                newLiveCells.Add(cell);
+            }
+        }
+
+        return newLiveCells;
+    }
+
+    private IEnumerable<Coordinate> GetNeighbours(Coordinate cell)
+    {
+        int[] offsets = { -1, 0, 1 };
+        foreach (int dx in offsets)
+        {
+            foreach (int dy in offsets)
+            {
+                if (cell.X + dx < 0 || cell.Y + dy < 0) continue;
+                if (dx == 0 && dy == 0) continue;
+                yield return new Coordinate(cell.X + dx, cell.Y + dy);
+            }
+        }
+    }
+
+    private int GetLiveNeighborCount(Coordinate cell, List<Coordinate> liveCells)
+    {
+        int liveCount = 0;
+
+        foreach (var neighbour in GetNeighbours(cell))
+            if (liveCells.Any(o => o.X == neighbour.X && o.Y == neighbour.Y))
+                liveCount++;
+
+        return liveCount;
     }
 
 }

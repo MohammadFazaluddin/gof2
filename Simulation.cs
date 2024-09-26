@@ -2,15 +2,23 @@ namespace GameOfLife;
 
 public class Simulation
 {
-    public void StartSimulation(List<Coordinate> initialCells)
-    {
-        var rules = new SimulationRules();
-        var grid = new Grid(initialCells, rules);
+    private readonly ISimulationRules _rules;
+    private readonly Grid _grid;
+    private readonly IDisplay _display;
 
-        grid.GetNextGeneration();
+    public Simulation(ISimulationRules rules, Grid grid, IDisplay display)
+    {
+        _rules = rules;
+        _grid = grid;
+        _display = display;
+    }
+
+    public void Start()
+    {
+        _grid.UpdateNextGeneration();
 
         Console.WriteLine("Output: ");
-        grid.DisplayLiveCells();
+        _display.Display(_grid);
     }
 
 }

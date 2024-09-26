@@ -1,6 +1,6 @@
 namespace GameOfLife;
 
-public class SimulationRules
+public class SimulationRules : ISimulationRules
 {
     public bool CheckCellState(bool isAlive, int liveNeighbour)
     {

@@ -1,8 +1,8 @@
 namespace GameOfLife;
 
-public class UserIO
+public class InputParser
 {
-    public List<Coordinate> GetInitialSetup()
+    public List<Cell> ParseInput()
     {
         var initialCells = new List<Coordinate>();
 
@@ -12,7 +12,7 @@ public class UserIO
 
         var convert = Int32.TryParse(seedStr, out seedCells);
 
-        List<Coordinate> cordsList = new();
+        List<Cell> cordsList = new();
 
         Console.WriteLine("\nEnter cell co-ordinates");
         for (int i = 0; i < seedCells; ++i)
@@ -20,11 +20,18 @@ public class UserIO
             // considering input will be valid every time
             var inputCells = Console.ReadLine();
 
-            Int32.TryParse(inputCells!.Substring(0, 1), out int x);
+            if (!inputCells!.Contains(','))
+            {
+                Console.WriteLine("Invalid input format, enter comma separated values");
+                --i;
+                continue;
+            }
 
-            Int32.TryParse(inputCells!.Substring(3, 1), out int y);
+            Int32.TryParse(inputCells!.Split(',')[0], out int x);
 
-            cordsList.Add(new Coordinate(x, y));
+            Int32.TryParse(inputCells!.Split(',')[1], out int y);
+
+            cordsList.Add(new Cell(x, y, true));
         }
 
         return cordsList;

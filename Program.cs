@@ -4,12 +4,17 @@ internal class Program
 {
     static void Main(string[] args)
     {
-        Simulation simulation = new();
-        UserIO userInput = new();
 
-        var initialSeed = userInput.GetInitialSetup();
+        InputParser userInput = new();
+        var initialSeed = userInput.ParseInput();
 
-        simulation.StartSimulation(initialSeed);
+        var rules = new SimulationRules();
+        var grid = new Grid(initialSeed, rules);
+        var gridDisplay = new GridDisplay();
+        Simulation simulation = new(rules, grid, gridDisplay);
+
+
+        simulation.Start();
     }
 }
 

@@ -2,44 +2,40 @@ namespace GameOfLife;
 
 public class Grid
 {
-    private List<Coordinate> _liveCells;
-    private SimulationRules _rules;
+    private HashSet<Cell> _liveCells;
+    private ISimulationRules _rules;
 
-    public Grid(List<Coordinate> initial, SimulationRules rules)
+    public Grid(List<Cell> initial, ISimulationRules rules)
     {
         _liveCells = new(initial);
 
         _rules = rules;
     }
 
-    public void GetNextGeneration()
+    public void UpdateNextGeneration()
     {
-        _liveCells = NextGeneration(_liveCells);
+        _liveCells = NextGeneration(_liveCells, _rules);
     }
 
-    public void DisplayLiveCells()
-    {
-        foreach (var cell in _liveCells)
-            Console.WriteLine($"{cell.X}, {cell.Y}");
-    }
-
-    public List<Coordinate> GetAllLiveCells()
+    public HashSet<Cell> GetLiveCells()
     {
         return _liveCells;
     }
 
     // should be pure function
-    public List<Coordinate> NextGeneration(List<Coordinate> currentLiveCells)
+    private HashSet<Cell> NextGeneration(HashSet<Cell> currentLiveCells, ISimulationRules rules)
     {
-        var newLiveCells = new List<Coordinate>();
-        var neighbourCells = new List<Coordinate>();
+        var newLiveCells = new HashSet<Cell>();
+        var neighbourCells = new HashSet<Cell>();
 
         foreach (var cell in currentLiveCells)
         {
             neighbourCells.Add(cell);
             foreach (var neighbour in GetNeighbours(cell))
             {
-                neighbourCells.Add(neighbour);
+                if (!neighbourCells.Any(c => c.Equals(neighbour)))
+                    neighbourCells.Add(neighbour);
+
             }
         }
 
@@ -48,10 +44,9 @@ public class Grid
             var liveNeighbours = GetLiveNeighborCount(cell, currentLiveCells);
             bool isAlive = currentLiveCells.Contains(cell);
 
-            bool nextState = _rules.CheckCellState(isAlive, liveNeighbours);
+            bool nextState = rules.CheckCellState(isAlive, liveNeighbours);
 
-            if (nextState &&
-                    !newLiveCells.Any(o => o.X == cell.X && o.Y == cell.Y))
+            if (nextState)
             {
                 newLiveCells.Add(cell);
             }
@@ -60,26 +55,26 @@ public class Grid
         return newLiveCells;
     }
 
-    private IEnumerable<Coordinate> GetNeighbours(Coordinate cell)
+    private IEnumerable<Cell> GetNeighbours(Cell cell)
     {
         int[] offsets = { -1, 0, 1 };
         foreach (int dx in offsets)
         {
             foreach (int dy in offsets)
             {
-                if (cell.X + dx < 0 || cell.Y + dy < 0) continue;
+                if (cell.Position.X + dx < 0 || cell.Position.Y + dy < 0) continue;
                 if (dx == 0 && dy == 0) continue;
-                yield return new Coordinate(cell.X + dx, cell.Y + dy);
+                yield return new Cell(cell.Position.X + dx, cell.Position.Y + dy, false);
             }
         }
     }
 
-    private int GetLiveNeighborCount(Coordinate cell, List<Coordinate> liveCells)
+    private int GetLiveNeighborCount(Cell cell, HashSet<Cell> liveCells)
     {
         int liveCount = 0;
 
         foreach (var neighbour in GetNeighbours(cell))
-            if (liveCells.Any(o => o.X == neighbour.X && o.Y == neighbour.Y))
+            if (liveCells.Any(c => c.Position.Equals(neighbour.Position)))
                 liveCount++;
 
         return liveCount;

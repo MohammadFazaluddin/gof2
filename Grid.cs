@@ -1,6 +1,6 @@
 namespace GameOfLife;
 
-public class Grid
+public class Grid : IGrid
 {
     private HashSet<Cell> _liveCells;
     private ISimulationRules _rules;

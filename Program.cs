@@ -8,11 +8,10 @@ internal class Program
         InputParser userInput = new();
         var initialSeed = userInput.ParseInput();
 
-        var rules = new SimulationRules();
-        var grid = new Grid(initialSeed, rules);
-        var gridDisplay = new GridDisplay();
+        ISimulationRules rules = new SimulationRules();
+        IGrid grid = new Grid(initialSeed, rules);
+        IDisplay gridDisplay = new GridDisplay();
         Simulation simulation = new(rules, grid, gridDisplay);
-
 
         simulation.Start();
     }

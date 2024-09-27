@@ -2,6 +2,6 @@ namespace GameOfLife;
 
 public interface IDisplay
 {
-    public void Display(Grid grid);
+    public void Display(IGrid grid);
 }
 

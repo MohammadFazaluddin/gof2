@@ -1,6 +1,6 @@
 namespace GameOfLife;
 
-public class Cell
+public class Cell : IEquatable<Cell>
 {
     public bool IsAlive { get; private set; }
     public Coordinate Position { get; }
@@ -16,9 +16,19 @@ public class Cell
         IsAlive = state;
     }
 
+    // this will help using Contains method which will use this method 
+    // (documentation said so)
+    public bool Equals(Cell? other)
+    {
+        if (other is null)
+            return false;
+
+        return this.Position.Equals(other.Position);
+    }
+
     public override bool Equals(object? obj)
     {
-        if (obj == null || GetType() != obj.GetType())
+        if (obj is null || GetType() != obj.GetType())
         {
             return false;
         }

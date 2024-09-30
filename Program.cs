@@ -9,8 +9,12 @@ internal class Program
         var initialSeed = userInput.ParseInput();
 
         ISimulationRules rules = new SimulationRules();
-        IGrid grid = new Grid(initialSeed, rules);
+        INeighbour neighbour = new Neighbours();
+
+        IGrid grid = new Grid(initialSeed, rules, neighbour);
+
         IDisplay gridDisplay = new GridDisplay();
+
         Simulation simulation = new(rules, grid, gridDisplay);
 
         simulation.Start();

@@ -4,12 +4,15 @@ public class Grid : IGrid
 {
     private HashSet<Cell> _liveCells;
     private ISimulationRules _rules;
+    private INeighbour _neighbour;
 
-    public Grid(List<Cell> initial, ISimulationRules rules)
+    public Grid(List<Cell> initial, ISimulationRules rules, INeighbour neighbour)
     {
         _liveCells = new(initial);
 
         _rules = rules;
+
+        _neighbour = neighbour;
     }
 
     public void UpdateNextGeneration()
@@ -26,22 +29,12 @@ public class Grid : IGrid
     private HashSet<Cell> NextGeneration(HashSet<Cell> currentLiveCells, ISimulationRules rules)
     {
         var newLiveCells = new HashSet<Cell>();
-        var neighbourCells = new HashSet<Cell>();
 
-        foreach (var cell in currentLiveCells)
-        {
-            neighbourCells.Add(cell);
-            foreach (var neighbour in GetNeighbours(cell))
-            {
-                if (!neighbourCells.Any(c => c.Equals(neighbour)))
-                    neighbourCells.Add(neighbour);
-
-            }
-        }
+        var neighbourCells = _neighbour.GenerateNeighbours(currentLiveCells);
 
         foreach (var cell in neighbourCells)
         {
-            var liveNeighbours = GetLiveNeighborCount(cell, currentLiveCells);
+            var liveNeighbours = _neighbour.GetLiveNeighborCount(cell, currentLiveCells, neighbourCells);
             bool isAlive = currentLiveCells.Contains(cell);
 
             bool nextState = rules.CheckCellState(isAlive, liveNeighbours);
@@ -53,31 +46,6 @@ public class Grid : IGrid
         }
 
         return newLiveCells;
-    }
-
-    private IEnumerable<Cell> GetNeighbours(Cell cell)
-    {
-        int[] offsets = { -1, 0, 1 };
-        foreach (int dx in offsets)
-        {
-            foreach (int dy in offsets)
-            {
-                if (cell.Position.X + dx < 0 || cell.Position.Y + dy < 0) continue;
-                if (dx == 0 && dy == 0) continue;
-                yield return new Cell(cell.Position.X + dx, cell.Position.Y + dy, false);
-            }
-        }
-    }
-
-    private int GetLiveNeighborCount(Cell cell, HashSet<Cell> liveCells)
-    {
-        int liveCount = 0;
-
-        foreach (var neighbour in GetNeighbours(cell))
-            if (liveCells.Any(c => c.Position.Equals(neighbour.Position)))
-                liveCount++;
-
-        return liveCount;
     }
 
 }

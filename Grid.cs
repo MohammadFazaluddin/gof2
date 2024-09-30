@@ -37,9 +37,7 @@ public class Grid : IGrid
             var liveNeighbours = _neighbour.GetLiveNeighborCount(cell, currentLiveCells, neighbourCells);
             bool isAlive = currentLiveCells.Contains(cell);
 
-            bool nextState = rules.CheckCellState(isAlive, liveNeighbours);
-
-            if (nextState)
+            if (rules.CheckCellState(isAlive, liveNeighbours))
             {
                 newLiveCells.Add(cell);
             }
